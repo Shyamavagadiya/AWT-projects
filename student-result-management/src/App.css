@@ -1,0 +1,15 @@
+.App {
+  text-align: center;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-bottom: 20px;
+}
+
+.average-marks {
+  margin-top: 20px;
+  font-size: 1.2em;
+}

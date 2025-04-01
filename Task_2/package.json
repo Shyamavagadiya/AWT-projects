@@ -1,0 +1,17 @@
+{
+  "name": "Task_2",
+  "version": "1.0.0",
+  "description": "A simple Node.js server with multiple pages",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "node",
+    "server",
+    "http"
+  ],
+  "author": "Shyama",
+  "license": "ISC"
+}

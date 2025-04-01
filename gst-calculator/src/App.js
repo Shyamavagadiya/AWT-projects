@@ -8,7 +8,7 @@ function App() {
   const calculateGST = () => {
     if (amount && gst) {
       const gstAmount = (parseFloat(amount) * parseFloat(gst)) / 100;
-      setTotal(parseFloat(amount) + gstAmount);
+        setTotal(parseFloat(amount) + gstAmount);
     }
   };
 
