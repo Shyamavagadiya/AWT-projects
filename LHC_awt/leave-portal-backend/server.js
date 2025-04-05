@@ -142,6 +142,82 @@ app.post('/employees', (req, res) => {
   }
 });
 
+// Leave Types endpoints
+app.get('/leave-types', (req, res) => {
+  connection.query('SELECT * FROM leave_types', (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to fetch leave types' });
+    }
+    res.json(results);
+  });
+});
+
+app.post('/leave-types', (req, res) => {
+  const { name, yearly_allowed, monthly_allowed, with_pay } = req.body;
+  
+  // Validate monthly <= yearly
+  if (parseInt(monthly_allowed) > parseInt(yearly_allowed)) {
+    return res.status(400).json({ error: 'Monthly allowance cannot exceed yearly allowance' });
+  }
+  
+  const query = 'INSERT INTO leave_types (name, yearly_allowed, monthly_allowed, with_pay) VALUES (?, ?, ?, ?)';
+  const values = [name, yearly_allowed, monthly_allowed, with_pay];
+  
+  connection.query(query, values, (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to create leave type: ' + err.message });
+    }
+    
+    res.status(201).json({ 
+      message: 'Leave type added successfully',
+      id: result.insertId
+    });
+  });
+});
+
+app.put('/leave-types/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, yearly_allowed, monthly_allowed, with_pay } = req.body;
+  
+  // Validate monthly <= yearly
+  if (parseInt(monthly_allowed) > parseInt(yearly_allowed)) {
+    return res.status(400).json({ error: 'Monthly allowance cannot exceed yearly allowance' });
+  }
+  
+  const query = 'UPDATE leave_types SET name = ?, yearly_allowed = ?, monthly_allowed = ?, with_pay = ? WHERE id = ?';
+  const values = [name, yearly_allowed, monthly_allowed, with_pay, id];
+  
+  connection.query(query, values, (err, result) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to update leave type: ' + err.message });
+    }
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Leave type not found' });
+    }
+    
+    res.json({ message: 'Leave type updated successfully' });
+  });
+});
+
+app.delete('/leave-types/:id', (req, res) => {
+  const { id } = req.params;
+  
+  connection.query('DELETE FROM leave_types WHERE id = ?', [id], (err, result) => {
+    if (err) {
+      console.error('Database error deleting leave type:', err);
+      return res.status(500).json({ error: 'Failed to delete leave type' });
+    }
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Leave type not found' });
+    }
+    
+    res.json({ message: 'Leave type deleted successfully' });
+  });
+});
+
+
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
