@@ -1,3 +1,5 @@
+//quest 1
+
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -27,29 +29,10 @@ function EmployeeForm() {
         if (res.data && res.data.length > 0) {
           setDesignations(res.data);
           setError(''); // Clear any previous error
-        } else {
-          // Fallback if empty response
-          setDesignations([
-            { id: 1, position: 'Manager' },
-            { id: 2, position: 'Team Leader' },
-            { id: 3, position: 'Developer' },
-            { id: 4, position: 'Junior Developer' },
-            { id: 5, position: 'Intern' }
-          ]);
-          setError(''); // Clear error when using fallback
         }
       })
       .catch(err => {
         console.error('Error fetching designations:', err);
-        // Fallback on error
-        setDesignations([
-          { id: 1, position: 'Manager' },
-          { id: 2, position: 'Team Leader' },
-          { id: 3, position: 'Developer' },
-          { id: 4, position: 'Junior Developer' },
-          { id: 5, position: 'Intern' }
-        ]);
-        setError(''); // Don't show error when using fallback
       });
   }, []);
 
