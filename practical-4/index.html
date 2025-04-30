@@ -1,0 +1,20 @@
+<div id="students"></div>
+
+<script>
+  async function loadStudents() {
+    const res = await fetch('/api/students');
+    const data = await res.json();
+    let html = '<ul>';
+    data.forEach(s => {
+      html += `<li>${s.name} - ${s.branch}
+                <form action="/delete/${s._id}" method="POST" style="display:inline;">
+                  <button type="submit">Delete</button>
+                </form>
+              </li>`;
+    });
+    html += '</ul>';
+    document.getElementById('students').innerHTML = html;
+  }
+
+  loadStudents();
+</script>
