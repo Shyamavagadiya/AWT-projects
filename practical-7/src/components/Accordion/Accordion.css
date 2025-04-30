@@ -1,0 +1,44 @@
+/* src/components/Accordion/Accordion.css */
+.accordion-container {
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .accordion-item {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  
+  .accordion-header {
+    background-color: #f7f7f7;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  
+  .accordion-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .accordion-icon {
+    font-size: 20px;
+    transition: transform 0.3s ease;
+  }
+  
+  .accordion-content {
+    padding: 15px;
+    background-color: white;
+    border-top: 1px solid #eee;
+  }
+  
+  .accordion-content p {
+    margin: 0;
+    line-height: 1.5;
+  }
