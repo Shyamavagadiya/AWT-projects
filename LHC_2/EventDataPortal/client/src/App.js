@@ -1,62 +1,42 @@
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
-// Pages
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Packages from './pages/Packages';
-import Events from './pages/Events';
-import Users from './pages/Users';
-import CompanyApprovals from './pages/CompanyApprovals';
-
-// Components
-import Header from './components/Header';
-import ProtectedRoute from './components/ProtectedRoute';
+// Basic Pages
+import BasicLogin from './pages/BasicLogin';
+import BasicRegister from './pages/BasicRegister';
+import BasicSuperAdminDashboard from './pages/BasicSuperAdminDashboard';
+import BasicCompanyDashboard from './pages/BasicCompanyDashboard';
 
 function App() {
+  const [user, setUser] = useState(null);
+
+  const handleLogin = (userData) => {
+    setUser(userData);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+  };
+
   return (
-    <AuthProvider>
-      <Router>
-        <div className="App">
-          <Header />
-          <main className="container py-4">
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              } />
-              <Route path="/packages" element={
-                <ProtectedRoute>
-                  <Packages />
-                </ProtectedRoute>
-              } />
-              <Route path="/approvals" element={
-                <ProtectedRoute>
-                  <CompanyApprovals />
-                </ProtectedRoute>
-              } />
-              <Route path="/events" element={
-                <ProtectedRoute>
-                  <Events />
-                </ProtectedRoute>
-              } />
-              <Route path="/users" element={
-                <ProtectedRoute>
-                  <Users />
-                </ProtectedRoute>
-              } />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </main>
-        </div>
-      </Router>
-    </AuthProvider>
+    <Router>
+      <div style={{ margin: '20px' }}>
+        <Routes>
+          {!user ? (
+            <>
+              <Route path="/login" element={<BasicLogin onLogin={handleLogin} />} />
+              <Route path="/register" element={<BasicRegister />} />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </>
+          ) : user.role === 'superadmin' ? (
+            <Route path="*" element={<BasicSuperAdminDashboard user={user} onLogout={handleLogout} />} />
+          ) : (
+            <Route path="*" element={<BasicCompanyDashboard user={user} onLogout={handleLogout} />} />
+          )}
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
