@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Communication Protocol Dashboard</title>
+    <title>Protocol Waveform Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
@@ -14,40 +14,51 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             padding: 20px;
+            color: #333;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
         }
         
         .header {
             text-align: center;
             margin-bottom: 30px;
-            color: #333;
         }
         
         .header h1 {
-            font-size: 2.5em;
+            font-size: 2.8em;
             margin-bottom: 10px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #666;
         }
         
         .controls {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr auto;
-            gap: 20px;
+            gap: 25px;
             margin-bottom: 30px;
             align-items: end;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
         }
         
         .input-group {
@@ -56,392 +67,776 @@
         }
         
         .input-group label {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: 600;
-            color: #555;
+            color: #444;
+            font-size: 0.95em;
         }
         
         .input-group input, .input-group select {
-            padding: 12px;
+            padding: 14px 16px;
             border: 2px solid #ddd;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
+            background: white;
         }
         
         .input-group input:focus, .input-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.1);
         }
         
         .send-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 8px;
+            padding: 14px 35px;
+            border-radius: 10px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(42, 82, 152, 0.3);
         }
         
         .send-btn:hover {
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(42, 82, 152, 0.4);
         }
         
         .send-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
         
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 20px;
+            gap: 25px;
+            margin-bottom: 25px;
         }
         
         .card {
             background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
         }
         
         .card h3 {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: #333;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 5px;
-        }
-        
-        .status {
+            font-size: 1.4em;
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 15px;
+        }
+        
+        .protocol-info {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .protocol-specs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        .spec-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2a5298;
+            font-size: 0.9em;
+        }
+        
+        .waveform-container {
+            grid-column: 1 / -1;
+            height: 400px;
+            background: white;
+        }
+        
+        .waveform-container h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.5em;
+        }
+        
+        .data-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .data-item {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            border-left: 3px solid #28a745;
+        }
+        
+        .transmission-log {
+            max-height: 250px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 8px 10px;
+            border-radius: 5px;
+            line-height: 1.4;
+        }
+        
+        .log-entry.info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .log-entry.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .log-entry.warning {
+            background: #fff3cd;
+            color: #856404;
         }
         
         .status-indicator {
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: #ccc;
+            display: inline-block;
+            margin-right: 8px;
         }
         
-        .status-indicator.connected {
-            background: #4CAF50;
+        .status-indicator.ready {
+            background: #28a745;
         }
         
         .status-indicator.transmitting {
-            background: #ff9800;
+            background: #fd7e14;
             animation: pulse 1s infinite;
         }
         
         @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
         }
         
-        .waveform-container {
-            grid-column: 1 / -1;
-            height: 300px;
-        }
-        
-        .protocol-details {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-        
-        .protocol-details h4 {
-            margin-bottom: 10px;
-            color: #667eea;
-        }
-        
-        .protocol-specs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        .protocol-selector {
+            display: flex;
             gap: 10px;
+            margin-bottom: 20px;
         }
         
-        .spec-item {
+        .protocol-btn {
+            padding: 10px 20px;
+            border: 2px solid #ddd;
             background: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            border-left: 3px solid #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
         
-        .transmission-log {
-            max-height: 200px;
-            overflow-y: auto;
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
+        .protocol-btn.active {
+            border-color: #2a5298;
+            background: #2a5298;
+            color: white;
+        }
+        
+        .binary-display {
             font-family: 'Courier New', monospace;
             font-size: 14px;
-        }
-        
-        .log-entry {
-            margin-bottom: 5px;
-            padding: 5px;
-            border-radius: 3px;
-        }
-        
-        .log-entry.sent {
-            background: #e3f2fd;
-            color: #1976d2;
-        }
-        
-        .log-entry.received {
-            background: #e8f5e8;
-            color: #388e3c;
-        }
-        
-        .log-entry.error {
-            background: #ffebee;
-            color: #d32f2f;
-        }
-        
-        .connection-status {
-            margin-bottom: 20px;
             padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .connection-status.connected {
-            background: #e8f5e8;
-            color: #388e3c;
-            border: 1px solid #4caf50;
-        }
-        
-        .connection-status.disconnected {
-            background: #ffebee;
-            color: #d32f2f;
-            border: 1px solid #f44336;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin: 10px 0;
+            word-break: break-all;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Communication Protocol Dashboard</h1>
-            <p>Real-time visualization of UART, SPI, and I2C protocols</p>
-        </div>
-        
-        <div class="connection-status" id="connectionStatus">
-            <span>⚠️ Connecting to server...</span>
+            <h1>🌊 Protocol Waveform Dashboard</h1>
+            <p>Real-time visualization of UART, I2C, and SPI communication protocols</p>
         </div>
         
         <div class="controls">
             <div class="input-group">
-                <label for="messageInput">Message:</label>
-                <input type="text" id="messageInput" placeholder="Enter message (e.g., shyama)" value="shyama">
+                <label for="dataInput">Decimal Data:</label>
+                <input type="number" id="dataInput" placeholder="Enter decimal value (e.g., 165)" value="165" min="0" max="255">
             </div>
             
             <div class="input-group">
                 <label for="protocolSelect">Protocol:</label>
-                <select id="protocolSelect">
+                <select id="protocolSelect" onchange="updateProtocolInfo()">
                     <option value="UART">UART</option>
-                    <option value="SPI" disabled>SPI (Coming Soon)</option>
-                    <option value="I2C" disabled>I2C (Coming Soon)</option>
+                    <option value="SPI">SPI</option>
+                    <option value="I2C">I2C</option>
                 </select>
             </div>
             
             <div class="input-group">
-                <label for="baudRate">Baud Rate:</label>
-                <select id="baudRate">
-                    <option value="9600">9600</option>
-                    <option value="19200">19200</option>
-                    <option value="38400">38400</option>
-                    <option value="115200">115200</option>
+                <label for="speedSelect">Speed:</label>
+                <select id="speedSelect">
+                    <option value="9600">9600 baud</option>
+                    <option value="19200">19200 baud</option>
+                    <option value="38400">38400 baud</option>
+                    <option value="115200">115200 baud</option>
                 </select>
             </div>
             
-            <button class="send-btn" id="sendBtn" onclick="sendMessage()">Send Data</button>
+            <button class="send-btn" onclick="transmitData()">
+                <span class="status-indicator ready"></span>
+                Transmit Data
+            </button>
         </div>
         
         <div class="dashboard-grid">
             <div class="card">
-                <h3>🔗 Connection Status</h3>
-                <div class="status">
-                    <div class="status-indicator" id="statusIndicator"></div>
-                    <span id="statusText">Disconnected</span>
+                <h3>📊 Current Transmission</h3>
+                <div class="data-info" id="dataInfo">
+                    <div class="data-item">
+                        <strong>Decimal:</strong> <span id="decimalValue">165</span>
+                    </div>
+                    <div class="data-item">
+                        <strong>Binary:</strong> <span id="binaryValue">10100101</span>
+                    </div>
+                    <div class="data-item">
+                        <strong>Hex:</strong> <span id="hexValue">0xA5</span>
+                    </div>
                 </div>
                 
-                <div class="protocol-details">
-                    <h4>Current Protocol: <span id="currentProtocol">UART</span></h4>
-                    <div class="protocol-specs" id="protocolSpecs">
+                <div class="protocol-info" id="protocolInfo">
+                    <h4>UART Configuration</h4>
+                    <div class="protocol-specs">
                         <div class="spec-item">Baud: <strong>9600</strong></div>
-                        <div class="spec-item">Data Bits: <strong>8</strong></div>
+                        <div class="spec-item">Data: <strong>8 bits</strong></div>
                         <div class="spec-item">Parity: <strong>None</strong></div>
-                        <div class="spec-item">Stop Bits: <strong>1</strong></div>
+                        <div class="spec-item">Stop: <strong>1 bit</strong></div>
                     </div>
                 </div>
             </div>
             
             <div class="card">
-                <h3>📊 Transmission Stats</h3>
+                <h3>📈 Transmission Stats</h3>
                 <div class="protocol-specs">
-                    <div class="spec-item">Sent: <strong><span id="sentCount">0</span></strong></div>
-                    <div class="spec-item">Received: <strong><span id="receivedCount">0</span></strong></div>
-                    <div class="spec-item">Errors: <strong><span id="errorCount">0</span></strong></div>
-                    <div class="spec-item">Success Rate: <strong><span id="successRate">100%</span></strong></div>
+                    <div class="spec-item">Protocol: <strong><span id="currentProtocol">UART</span></strong></div>
+                    <div class="spec-item">Bits/Frame: <strong><span id="bitsPerFrame">10</span></strong></div>
+                    <div class="spec-item">Duration: <strong><span id="frameDuration">1.04ms</span></strong></div>
+                    <div class="spec-item">Clock: <strong><span id="clockInfo">Async</span></strong></div>
                 </div>
             </div>
         </div>
         
         <div class="card waveform-container">
-            <h3>📈 Real-time Waveform</h3>
+            <h3>🌊 Protocol Waveform Analysis</h3>
+            <div class="data-info">
+                <div class="data-item">
+                    <strong>Bit Pattern:</strong> <span id="bitPattern">Start(0) + 10100101 + Stop(1)</span>
+                </div>
+                <div class="data-item">
+                    <strong>Transmission:</strong> <span id="transmissionDetails">LSB first, No parity</span>
+                </div>
+            </div>
             <canvas id="waveformChart"></canvas>
         </div>
         
         <div class="card">
-            <h3>📝 Transmission Log</h3>
+            <h3>📝 Protocol Analysis Log</h3>
             <div class="transmission-log" id="transmissionLog">
-                <div class="log-entry">Dashboard initialized. Waiting for connection...</div>
+                <div class="log-entry info">[System] Dashboard initialized. Ready for data transmission.</div>
             </div>
         </div>
     </div>
 
     <script>
-        // WebSocket connection
-        let ws = null;
-        let sentCount = 0;
-        let receivedCount = 0;
-        let errorCount = 0;
         let waveformChart = null;
-        let waveformData = [];
+        let currentData = 165;
+        let currentProtocol = 'UART';
+        
+        // Protocol configurations
+        const protocolConfigs = {
+            UART: {
+                name: 'UART',
+                dataBits: 8,
+                startBits: 1,
+                stopBits: 1,
+                parity: 'None',
+                clockType: 'Asynchronous',
+                idleState: 1,
+                bitsPerFrame: 10
+            },
+            SPI: {
+                name: 'SPI',
+                dataBits: 8,
+                clockEdge: 'Rising',
+                clockPolarity: 'Low',
+                clockType: 'Synchronous',
+                idleState: 1,
+                bitsPerFrame: 8
+            },
+            I2C: {
+                name: 'I2C',
+                address: '0x48',
+                dataBits: 8,
+                clockType: 'Synchronous',
+                acknowledge: true,
+                bitsPerFrame: 27 // Start + Address(7) + R/W + ACK + Data(8) + ACK + Stop
+            }
+        };
         
         // Initialize dashboard
         function init() {
-            setupWebSocket();
             setupChart();
-            updateConnectionStatus(false);
+            updateDataDisplay();
+            updateProtocolInfo();
+            generateWaveform();
         }
         
-        // Setup WebSocket connection
-        function setupWebSocket() {
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}`;
+        // Setup waveform chart
+        function setupChart() {
+            const ctx = document.getElementById('waveformChart').getContext('2d');
             
-            ws = new WebSocket(wsUrl);
+            waveformChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: []
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    scales: {
+                        y: {
+                            min: -0.5,
+                            max: 3.5,
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    const labels = ['GND', 'LOW', 'HIGH', 'VCC'];
+                                    return labels[value + 0.5] || value;
+                                }
+                            },
+                            grid: {
+                                color: '#e0e0e0'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Signal Level'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Time (μs)'
+                            },
+                            grid: {
+                                color: '#f0f0f0'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return `Time: ${context[0].label} μs`;
+                                },
+                                label: function(context) {
+                                    const value = context.parsed.y;
+                                    const state = value > 0.5 ? 'HIGH (1)' : 'LOW (0)';
+                                    return `${context.dataset.label}: ${state}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update data display
+        function updateDataDisplay() {
+            const data = parseInt(document.getElementById('dataInput').value) || 0;
+            currentData = Math.min(255, Math.max(0, data));
             
-            ws.onopen = () => {
-                console.log('Connected to server');
-                updateConnectionStatus(true);
-                addLogEntry('Connected to server', 'received');
-            };
+            document.getElementById('decimalValue').textContent = currentData;
+            document.getElementById('binaryValue').textContent = currentData.toString(2).padStart(8, '0');
+            document.getElementById('hexValue').textContent = '0x' + currentData.toString(16).toUpperCase().padStart(2, '0');
+        }
+        
+        // Update protocol information
+        function updateProtocolInfo() {
+            currentProtocol = document.getElementById('protocolSelect').value;
+            const config = protocolConfigs[currentProtocol];
             
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                handleMessage(data);
-            };
+            document.getElementById('currentProtocol').textContent = config.name;
+            document.getElementById('bitsPerFrame').textContent = config.bitsPerFrame;
+            document.getElementById('clockInfo').textContent = config.clockType;
             
-            ws.onclose = () => {
-                console.log('Disconnected from server');
-                updateConnectionStatus(false);
-                addLogEntry('Disconnected from server', 'error');
+            // Update protocol-specific info
+            const protocolInfoEl = document.getElementById('protocolInfo');
+            let infoHTML = `<h4>${config.name} Configuration</h4><div class="protocol-specs">`;
+            
+            switch(currentProtocol) {
+                case 'UART':
+                    const baudRate = document.getElementById('speedSelect').value;
+                    infoHTML += `
+                        <div class="spec-item">Baud: <strong>${baudRate}</strong></div>
+                        <div class="spec-item">Data: <strong>${config.dataBits} bits</strong></div>
+                        <div class="spec-item">Parity: <strong>${config.parity}</strong></div>
+                        <div class="spec-item">Stop: <strong>${config.stopBits} bit</strong></div>
+                    `;
+                    break;
+                case 'SPI':
+                    infoHTML += `
+                        <div class="spec-item">Mode: <strong>Master</strong></div>
+                        <div class="spec-item">Clock: <strong>1 MHz</strong></div>
+                        <div class="spec-item">Edge: <strong>${config.clockEdge}</strong></div>
+                        <div class="spec-item">CPOL/CPHA: <strong>0/0</strong></div>
+                    `;
+                    break;
+                case 'I2C':
+                    infoHTML += `
+                        <div class="spec-item">Speed: <strong>100 kHz</strong></div>
+                        <div class="spec-item">Address: <strong>${config.address}</strong></div>
+                        <div class="spec-item">Mode: <strong>Master</strong></div>
+                        <div class="spec-item">ACK: <strong>Enabled</strong></div>
+                    `;
+                    break;
+            }
+            
+            infoHTML += '</div>';
+            protocolInfoEl.innerHTML = infoHTML;
+            
+            // Update frame duration based on current settings
+            let duration = '';
+            switch(currentProtocol) {
+                case 'UART':
+                    const baudRate = parseInt(document.getElementById('speedSelect').value);
+                    duration = ((config.bitsPerFrame / baudRate) * 1000).toFixed(2) + 'ms';
+                    break;
+                case 'SPI':
+                    duration = (config.bitsPerFrame).toFixed(0) + 'μs';
+                    break;
+                case 'I2C':
+                    duration = (config.bitsPerFrame * 10).toFixed(0) + 'μs';
+                    break;
+            }
+            document.getElementById('frameDuration').textContent = duration;
+            
+            // Add log entry for protocol change
+            addLogEntry(`Switched to ${config.name} protocol`, 'info');
+        }
+        
+        // Generate waveform based on protocol
+        function generateWaveform() {
+            updateDataDisplay();
+            
+            const binary = currentData.toString(2).padStart(8, '0');
+            let bitPattern = '';
+            let transmissionDetails = '';
+            
+            // Clear chart
+            waveformChart.data.labels = [];
+            waveformChart.data.datasets = [];
+            
+            switch(currentProtocol) {
+                case 'UART':
+                    generateUARTWaveform(binary);
+                    bitPattern = `Start(0) + ${binary} + Stop(1)`;
+                    transmissionDetails = 'LSB first, No parity, Asynchronous';
+                    break;
+                case 'SPI':
+                    generateSPIWaveform(binary);
+                    bitPattern = `CS(0) + ${binary} + CS(1)`;
+                    transmissionDetails = 'MSB first, Synchronous, Full-duplex';
+                    break;
+                case 'I2C':
+                    generateI2CWaveform(binary);
+                    bitPattern = `Start + 0x48 + W + ACK + ${binary} + ACK + Stop`;
+                    transmissionDetails = 'MSB first, Open-drain, Bidirectional';
+                    break;
+            }
+            
+            document.getElementById('bitPattern').textContent = bitPattern;
+            document.getElementById('transmissionDetails').textContent = transmissionDetails;
+            
+            waveformChart.update();
+        }
+        
+        // Generate UART waveform
+        function generateUARTWaveform(binary) {
+            const baudRate = parseInt(document.getElementById('speedSelect').value);
+            const timePerBit = 1000000 / baudRate; // μs per bit
+            const times = [];
+            const txData = [];
+            const labels = [];
+            
+            let time = 0;
+            const sampleRate = timePerBit / 20; // 20 samples per bit for smooth waveform
+            
+            // Idle state (high)
+            for(let i = 0; i < 15; i++) {
+                times.push(time);
+                txData.push(1);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            // Start bit (0) - falling edge
+            times.push(time);
+            txData.push(1);
+            labels.push(time.toFixed(1));
+            time += sampleRate/2;
+            
+            times.push(time);
+            txData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate/2;
+            
+            // Start bit duration
+            for(let i = 0; i < 18; i++) {
+                times.push(time);
+                txData.push(0);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            // Data bits (LSB first for UART)
+            for(let bitIndex = 7; bitIndex >= 0; bitIndex--) {
+                const bit = parseInt(binary[bitIndex]);
                 
-                // Try to reconnect after 3 seconds
-                setTimeout(setupWebSocket, 3000);
-            };
+                // Bit transition
+                times.push(time);
+                txData.push(bit);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+                
+                // Bit duration
+                for(let i = 0; i < 18; i++) {
+                    times.push(time);
+                    txData.push(bit);
+                    labels.push(time.toFixed(1));
+                    time += sampleRate;
+                }
+            }
             
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-                addLogEntry('Connection error', 'error');
-                errorCount++;
-                updateStats();
-            };
+            // Stop bit (1) - rising edge
+            times.push(time);
+            txData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate/2;
+            
+            times.push(time);
+            txData.push(1);
+            labels.push(time.toFixed(1));
+            time += sampleRate/2;
+            
+            // Stop bit duration
+            for(let i = 0; i < 18; i++) {
+                times.push(time);
+                txData.push(1);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            // Final idle
+            for(let i = 0; i < 15; i++) {
+                times.push(time);
+                txData.push(1);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            waveformChart.data.labels = labels;
+            waveformChart.data.datasets = [{
+                label: 'UART TX',
+                data: txData,
+                borderColor: '#1e3c72',
+                backgroundColor: 'rgba(30, 60, 114, 0.1)',
+                borderWidth: 3,
+                pointRadius: 0,
+                stepped: true,
+                tension: 0
+            }];
         }
         
-        // Handle incoming messages
-        function handleMessage(data) {
-            console.log('Received:', data);
+        // Generate SPI waveform
+        function generateSPIWaveform(binary) {
+            const clockFreq = 1000000; // 1MHz default
+            const clockPeriod = 1000000 / clockFreq; // μs
+            const times = [];
+            const mosiData = [];
+            const sclkData = [];
+            const csData = [];
+            const labels = [];
             
-            switch(data.type) {
-                case 'uart_response':
-                    receivedCount++;
-                    addLogEntry(`Received: "${data.data}"`, 'received');
-                    updateWaveform(data);
-                    updateStats();
-                    break;
-                    
-                case 'transmission_start':
-                    addLogEntry(`Sending: "${data.message}" via ${data.protocol}`, 'sent');
-                    setTransmitting(true);
-                    break;
+            let time = 0;
+            const sampleRate = clockPeriod / 10; // 10 samples per clock period
+            
+            // Pre-transmission (CS high, SCLK low, MOSI don't care)
+            for(let i = 0; i < 8; i++) {
+                times.push(time);
+                csData.push(1);
+                sclkData.push(0);
+                mosiData.push(0);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
             }
+            
+            // CS goes low (setup time)
+            times.push(time);
+            csData.push(0);
+            sclkData.push(0);
+            mosiData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            // Data transmission (MSB first for SPI)
+            for(let bitIndex = 0; bitIndex < 8; bitIndex++) {
+                const bit = parseInt(binary[bitIndex]);
+                
+                // Setup phase: Clock low, data setup
+                times.push(time);
+                csData.push(0);
+                sclkData.push(0);
+                mosiData.push(bit);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+                
+                // Hold phase: Clock high, data valid (sampled on rising edge)
+                times.push(time);
+                csData.push(0);
+                sclkData.push(1);
+                mosiData.push(bit);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+                
+                // Clock low again
+                times.push(time);
+                csData.push(0);
+                sclkData.push(0);
+                mosiData.push(bit);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            // Hold CS low for a bit
+            times.push(time);
+            csData.push(0);
+            sclkData.push(0);
+            mosiData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            // CS goes high (end of transmission)
+            times.push(time);
+            csData.push(1);
+            sclkData.push(0);
+            mosiData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            // Post-transmission idle
+            for(let i = 0; i < 5; i++) {
+                times.push(time);
+                csData.push(1);
+                sclkData.push(0);
+                mosiData.push(0);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            waveformChart.data.labels = labels;
+            waveformChart.data.datasets = [
+                {
+                    label: 'SPI CS (Chip Select)',
+                    data: csData,
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    stepped: true,
+                    tension: 0
+                },
+                {
+                    label: 'SPI SCLK (Clock)',
+                    data: sclkData,
+                    borderColor: '#fd7e14',
+                    backgroundColor: 'rgba(253, 126, 20, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    stepped: true,
+                    tension: 0
+                },
+                {
+                    label: 'SPI MOSI (Master Out)',
+                    data: mosiData,
+                    borderColor: '#1e3c72',
+                    backgroundColor: 'rgba(30, 60, 114, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    stepped: true,
+                    tension: 0
+                }
+            ];
         }
         
-        // Send message to FPGA
-        function sendMessage() {
-            if (!ws || ws.readyState !== WebSocket.OPEN) {
-                addLogEntry('Error: Not connected to server', 'error');
-                return;
-            }
+        // Transmit data function
+        function transmitData() {
+            const btn = document.querySelector('.send-btn');
+            const indicator = btn.querySelector('.status-indicator');
             
-            const message = document.getElementById('messageInput').value;
-            const protocol = document.getElementById('protocolSelect').value;
+            // Update button state
+            indicator.className = 'status-indicator transmitting';
+            btn.disabled = true;
+            btn.innerHTML = '<span class="status-indicator transmitting"></span>Transmitting...';
             
-            if (!message.trim()) {
-                addLogEntry('Error: Empty message', 'error');
-                return;
-            }
+            // Add log entry
+            addLogEntry(`Transmitting decimal ${currentData} (0x${currentData.toString(16).toUpperCase().padStart(2, '0')}) via ${currentProtocol}`, 'success');
             
-            const data = {
-                type: 'send_data',
-                message: message,
-                protocol: protocol
-            };
+            // Generate and display waveform
+            generateWaveform();
             
-            ws.send(JSON.stringify(data));
-            sentCount++;
-            updateStats();
-            setTransmitting(true);
-            
-            // Reset transmitting status after 2 seconds
-            setTimeout(() => setTransmitting(false), 2000);
-        }
-        
-        // Update connection status
-        function updateConnectionStatus(connected) {
-            const statusEl = document.getElementById('connectionStatus');
-            const indicatorEl = document.getElementById('statusIndicator');
-            const textEl = document.getElementById('statusText');
-            const sendBtn = document.getElementById('sendBtn');
-            
-            if (connected) {
-                statusEl.className = 'connection-status connected';
-                statusEl.innerHTML = '<span>✅ Connected to FPGA Dashboard Server</span>';
-                indicatorEl.className = 'status-indicator connected';
-                textEl.textContent = 'Connected';
-                sendBtn.disabled = false;
-            } else {
-                statusEl.className = 'connection-status disconnected';
-                statusEl.innerHTML = '<span>❌ Disconnected - Attempting to reconnect...</span>';
-                indicatorEl.className = 'status-indicator';
-                textEl.textContent = 'Disconnected';
-                sendBtn.disabled = true;
-            }
-        }
-        
-        // Set transmitting status
-        function setTransmitting(transmitting) {
-            const indicatorEl = document.getElementById('statusIndicator');
-            const textEl = document.getElementById('statusText');
-            
-            if (transmitting && ws && ws.readyState === WebSocket.OPEN) {
-                indicatorEl.className = 'status-indicator transmitting';
-                textEl.textContent = 'Transmitting...';
-            } else if (ws && ws.readyState === WebSocket.OPEN) {
-                indicatorEl.className = 'status-indicator connected';
-                textEl.textContent = 'Connected';
-            }
+            // Simulate transmission time
+            setTimeout(() => {
+                indicator.className = 'status-indicator ready';
+                btn.disabled = false;
+                btn.innerHTML = '<span class="status-indicator ready"></span>Transmit Data';
+                
+                addLogEntry(`✓ Transmission complete. ${protocolConfigs[currentProtocol].bitsPerFrame} bits sent via ${currentProtocol}`, 'info');
+            }, 2000);
         }
         
         // Add log entry
@@ -454,114 +849,229 @@
             logEl.appendChild(entry);
             logEl.scrollTop = logEl.scrollHeight;
             
-            // Keep only last 50 entries
-            while (logEl.children.length > 50) {
+            // Keep only last 20 entries
+            while (logEl.children.length > 20) {
                 logEl.removeChild(logEl.firstChild);
             }
         }
         
-        // Update statistics
-        function updateStats() {
-            document.getElementById('sentCount').textContent = sentCount;
-            document.getElementById('receivedCount').textContent = receivedCount;
-            document.getElementById('errorCount').textContent = errorCount;
-            
-            const total = sentCount + errorCount;
-            const successRate = total > 0 ? Math.round((sentCount / total) * 100) : 100;
-            document.getElementById('successRate').textContent = `${successRate}%`;
-        }
+        // Event listeners
+        document.getElementById('dataInput').addEventListener('input', () => {
+            generateWaveform();
+        });
         
-        // Setup chart
-        function setupChart() {
-            const ctx = document.getElementById('waveformChart').getContext('2d');
-            
-            waveformChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'UART TX',
-                        data: [],
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                        tension: 0.1,
-                        pointRadius: 0
-                    }, {
-                        label: 'UART RX',
-                        data: [],
-                        borderColor: '#764ba2',
-                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
-                        tension: 0.1,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 1.2,
-                            ticks: {
-                                stepSize: 0.5
-                            }
-                        },
-                        x: {
-                            display: false
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true
-                        }
-                    }
-                }
-            });
-        }
+        document.getElementById('protocolSelect').addEventListener('change', () => {
+            updateProtocolInfo();
+            generateWaveform();
+        });
         
-        // Update waveform (simulated for now)
-        function updateWaveform(data) {
-            const message = data.data;
-            const timePoints = 100;
-            
-            // Clear existing data
-            waveformChart.data.labels = [];
-            waveformChart.data.datasets[0].data = [];
-            waveformChart.data.datasets[1].data = [];
-            
-            // Generate simulated UART waveform
-            for (let i = 0; i < timePoints; i++) {
-                waveformChart.data.labels.push(i);
-                
-                // Simulate UART transmission pattern
-                const bitIndex = Math.floor(i / 10) % 10;
-                let txValue = 1; // Idle high
-                let rxValue = 1;
-                
-                if (i > 20 && i < 80) { // During transmission
-                    if (bitIndex === 0) txValue = 0; // Start bit
-                    else if (bitIndex < 9) txValue = Math.random() > 0.5 ? 1 : 0; // Data bits
-                    else txValue = 1; // Stop bit
-                    
-                    rxValue = txValue; // Echo back
-                }
-                
-                waveformChart.data.datasets[0].data.push(txValue);
-                waveformChart.data.datasets[1].data.push(rxValue);
-            }
-            
-            waveformChart.update();
-        }
+        document.getElementById('speedSelect').addEventListener('change', () => {
+            updateProtocolInfo();
+            generateWaveform();
+        });
         
-        // Handle Enter key in message input
-        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+        document.getElementById('dataInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                sendMessage();
+                transmitData();
             }
         });
         
         // Initialize when page loads
         window.onload = init;
-    </script>
-</body>
-</html>
+        
+        // Generate I2C waveform
+        function generateI2CWaveform(binary) {
+            const i2cFreq = 100000; // 100kHz
+            const bitTime = 1000000 / i2cFreq; // μs per bit
+            const times = [];
+            const sdaData = [];
+            const sclData = [];
+            const labels = [];
+            
+            let time = 0;
+            const sampleRate = bitTime / 8; // 8 samples per bit for smooth waveform
+            
+            // Idle state (both high - open drain)
+            for(let i = 0; i < 6; i++) {
+                times.push(time);
+                sdaData.push(1);
+                sclData.push(1);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            // Start condition (SDA falls while SCL high)
+            times.push(time);
+            sdaData.push(1);
+            sclData.push(1);
+            labels.push(time.toFixed(1));
+            time += sampleRate/2;
+            
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(1);
+            labels.push(time.toFixed(1));
+            time += sampleRate/2;
+            
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            // Address bits (0x48 = 01001000) - MSB first
+            const address = '01001000';
+            for(let bitIndex = 0; bitIndex < 7; bitIndex++) {
+                const bit = parseInt(address[bitIndex]);
+                
+                // Setup data (SDA changes while SCL low)
+                times.push(time);
+                sdaData.push(bit);
+                sclData.push(0);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+                
+                // Clock high (data must be stable)
+                times.push(time);
+                sdaData.push(bit);
+                sclData.push(1);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+                
+                // Clock low (data can change)
+                times.push(time);
+                sdaData.push(bit);
+                sclData.push(0);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            // Write bit (0)
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(1);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            // ACK bit (slave pulls SDA low)
+            times.push(time);
+            sdaData.push(0); // Master releases SDA, slave pulls low
+            sclData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(1);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            // Data bits (MSB first)
+            for(let bitIndex = 0; bitIndex < 8; bitIndex++) {
+                const bit = parseInt(binary[bitIndex]);
+                
+                // Setup data
+                times.push(time);
+                sdaData.push(bit);
+                sclData.push(0);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+                
+                // Clock high
+                times.push(time);
+                sdaData.push(bit);
+                sclData.push(1);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+                
+                // Clock low
+                times.push(time);
+                sdaData.push(bit);
+                sclData.push(0);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            // Data ACK bit (slave acknowledges)
+            times.push(time);
+            sdaData.push(0); // Master releases SDA, slave pulls low for ACK
+            sclData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(1);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(0);
+            labels.push(time.toFixed(1));
+            time += sampleRate;
+            
+            // Stop condition (SDA rises while SCL high)
+            times.push(time);
+            sdaData.push(0);
+            sclData.push(1);
+            labels.push(time.toFixed(1));
+            time += sampleRate/2;
+            
+            times.push(time);
+            sdaData.push(1);
+            sclData.push(1);
+            labels.push(time.toFixed(1));
+            time += sampleRate/2;
+            
+            // Final idle
+            for(let i = 0; i < 6; i++) {
+                times.push(time);
+                sdaData.push(1);
+                sclData.push(1);
+                labels.push(time.toFixed(1));
+                time += sampleRate;
+            }
+            
+            waveformChart.data.labels = labels;
+            waveformChart.data.datasets = [
+                {
+                    label: 'I2C SCL (Clock)',
+                    data: sclData,
+                    borderColor: '#fd7e14',
+                    backgroundColor: 'rgba(253, 126, 20, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    stepped: true,
+                    tension: 0
+                },
+                {
+                    label: 'I2C SDA (Data)',
+                    data: sdaData,
+                    borderColor: '#1e3c72',
+                    backgroundColor: 'rgba(30, 60, 114, 0.1)',
+                    borderWidth: 3,
+                    pointRadius: 0,
+                    stepped: true,
+                    tension: 0
+                }
+            ];
+        }
